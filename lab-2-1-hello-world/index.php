@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set("Europe/Moscow");
+
 $messages = [
     "Hello, World!",
     "Добро пожаловать на страницу!",
