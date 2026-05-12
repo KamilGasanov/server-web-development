@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../lab-3-2-trigonometry/trigonometry.php';
+
 function addNumbers(float $left, float $right): float
 {
     return $left + $right;
@@ -95,6 +97,32 @@ function normalizeExpression(string $expression): string
     return $expression;
 }
 
+function getTaskExpressionPath(): string
+{
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'Task' . DIRECTORY_SEPARATOR . 'expression.txt';
+}
+
+function readTaskExpression(string $path): string
+{
+    if (!is_file($path)) {
+        throw new RuntimeException('Файл Task/expression.txt не найден.');
+    }
+
+    $content = file_get_contents($path);
+
+    if ($content === false) {
+        throw new RuntimeException('Не удалось прочитать файл Task/expression.txt.');
+    }
+
+    $expression = trim($content);
+
+    if ($expression === '') {
+        throw new RuntimeException('Файл Task/expression.txt пуст.');
+    }
+
+    return $expression;
+}
+
 function tokenizeExpression(string $expression): array
 {
     $tokens = [];
@@ -141,7 +169,7 @@ function tokenizeExpression(string $expression): array
                 $index++;
             }
 
-            if (!in_array($identifier, ['sqrt', 'ln', 'log', 'pi', 'e'], true)) {
+            if (!in_array($identifier, ['sqrt', 'ln', 'log', 'sin', 'cos', 'tan', 'pi', 'e'], true)) {
                 throw new InvalidArgumentException('Обнаружена неизвестная функция или константа.');
             }
 
@@ -279,7 +307,7 @@ function parsePrimary(array $tokens, int &$position): float
         return exp(1);
     }
 
-    if (in_array($token, ['sqrt', 'ln', 'log'], true)) {
+    if (in_array($token, ['sqrt', 'ln', 'log', 'sin', 'cos', 'tan'], true)) {
         return parseFunctionCall($tokens, $position);
     }
 
@@ -308,6 +336,10 @@ function parseFunctionCall(array $tokens, int &$position): float
     }
 
     $position++;
+
+    if (in_array($functionName, ['sin', 'cos', 'tan'], true)) {
+        return evaluateTrigonometricFunction($functionName, $value);
+    }
 
     return match ($functionName) {
         'sqrt' => sqrtNumber($value),
@@ -381,6 +413,16 @@ $sourceExpression = isset($_GET['expression']) ? (string) $_GET['expression'] : 
 $resultValue = isset($_GET['result']) ? (string) $_GET['result'] : null;
 $errorMessage = isset($_GET['error']) ? (string) $_GET['error'] : null;
 $displayValue = $resultValue ?? $sourceExpression;
+$taskExpression = '';
+$taskResultValue = null;
+$taskErrorMessage = null;
+
+try {
+    $taskExpression = readTaskExpression(getTaskExpressionPath());
+    $taskResultValue = formatNumber(evaluateExpression($taskExpression));
+} catch (Throwable $exception) {
+    $taskErrorMessage = $exception->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -435,8 +477,8 @@ $displayValue = $resultValue ?? $sourceExpression;
             </div>
 
             <div class="button-grid">
-                <button type="button" class="control-button control-clear" data-action="clear">С</button>
-                <button type="button" class="control-button" data-action="backspace">←</button>
+                <button type="button" class="control-button control-clear" data-action="clear">C</button>
+                <button type="button" class="control-button" data-action="backspace">&larr;</button>
                 <button type="button" class="operator-button" data-value="(">(</button>
                 <button type="button" class="operator-button" data-value=")">)</button>
                 <button type="button" class="operator-button" data-value="/">/</button>
@@ -457,13 +499,17 @@ $displayValue = $resultValue ?? $sourceExpression;
                 <button type="button" data-value="2">2</button>
                 <button type="button" data-value="3">3</button>
                 <button type="button" class="operator-button" data-value="+">+</button>
-                <button type="button" class="function-button" data-value="sqrt(">√x</button>
+                <button type="button" class="function-button" data-value="sqrt(">&radic;x</button>
 
                 <button type="button" data-value="0">0</button>
                 <button type="button" data-value=".">.</button>
                 <button type="button" class="function-button" data-value="pi">pi</button>
                 <button type="button" class="function-button" data-value="e">e</button>
                 <button type="button" class="function-button" data-value="ln(">ln</button>
+
+                <button type="button" class="function-button" data-value="sin(">sin</button>
+                <button type="button" class="function-button" data-value="cos(">cos</button>
+                <button type="button" class="function-button" data-value="tan(">tan</button>
 
                 <button type="button" class="function-button wide-button" data-value="log(">log</button>
                 <button type="submit" class="equals-button wider-button">=</button>
@@ -475,7 +521,7 @@ $displayValue = $resultValue ?? $sourceExpression;
         <h2>Что умеет калькулятор</h2>
         <ul>
             <li>Проверяет корректность выражения и не допускает недопустимые символы.</li>
-            <li>Поддерживает сложение, вычитание, умножение, деление, степень, факториал, корень, ln, log, pi и e.</li>
+            <li>Поддерживает сложение, вычитание, умножение, деление, степень, факториал, корень, ln, log, sin, cos, tan, pi и e.</li>
             <li>Понимает отрицательные числа, отрицательные скобки и дробные значения.</li>
             <li>Рекурсивно вычисляет выражение с отдельными пользовательскими функциями для операций.</li>
         </ul>
@@ -486,6 +532,21 @@ $displayValue = $resultValue ?? $sourceExpression;
             <strong>n</strong> для <code>ln(</code>, <strong>g</strong> для <code>log(</code>,
             <strong>^</strong> для степени и <strong>!</strong> для факториала.
         </p>
+
+        <p class="shortcut-note">
+            Тригонометрия: <strong>s</strong> для <code>sin(</code>, <strong>c</strong> для <code>cos(</code>,
+            <strong>t</strong> для <code>tan(</code>. Углы считаются в градусах.
+        </p>
+
+        <div class="task-panel">
+            <h3>Тригонометрия</h3>
+            <?php if ($taskErrorMessage !== null): ?>
+                <p class="status-error"><strong>Ошибка:</strong> <?= htmlspecialchars($taskErrorMessage, ENT_QUOTES, 'UTF-8') ?></p>
+            <?php else: ?>
+                <p><strong>Выражение:</strong> <?= htmlspecialchars($taskExpression, ENT_QUOTES, 'UTF-8') ?></p>
+                <p class="status-ok"><strong>Результат:</strong> <?= htmlspecialchars((string) $taskResultValue, ENT_QUOTES, 'UTF-8') ?></p>
+            <?php endif; ?>
+        </div>
     </section>
 </main>
 

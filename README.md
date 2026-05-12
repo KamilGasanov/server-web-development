@@ -9,3 +9,5 @@ lab-4-1: https://lab-2-2-feedback-form.onrender.com
 lab-1-2: https://lab-1-2-solve-the-equation.onrender.com
 
 lab-2-2: https://lab-2-2-calculator.onrender.com
+
+lab-3-2: https://lab-2-2-calculator.onrender.com

@@ -8,7 +8,10 @@ const keyMappings = {
     e: 'e',
     r: 'sqrt(',
     n: 'ln(',
-    g: 'log('
+    g: 'log(',
+    s: 'sin(',
+    c: 'cos(',
+    t: 'tan('
 };
 
 function syncExpression(nextValue) {
