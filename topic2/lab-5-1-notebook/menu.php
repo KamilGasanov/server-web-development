@@ -45,7 +45,7 @@ function renderMenu(): string
             </nav>
         </div>
     </header>
-
+C:\xampp\php\php.exe -S localhost:8000
     <?php if ($action === 'view'): ?>
         <aside class="submenu-wrap">
             <nav class="menu menu--secondary" aria-label="Сортировка">
