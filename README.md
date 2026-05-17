@@ -13,3 +13,5 @@ lab-2-2: https://lab-2-2-calculator.onrender.com
 lab-3-2: https://lab-2-2-calculator.onrender.com
 
 lab-4-2: https://lab-4-2-regex.onrender.com
+
+lab-5-1: https://lab-5-1-notebook.onrender.com
