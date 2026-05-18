@@ -21,3 +21,5 @@ course work: https://course-work-s45j.onrender.com
 ## Topic 3
 
 lab-1-1: https://lab-1-1-oop.onrender.com
+
+lab-2: https://lab-2-mvc.onrender.com
